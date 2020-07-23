@@ -1,3 +1,5 @@
+Diese Implementation basiert auf dem Repository von Jong Chul Ye:
+
 Paper
 ===============
 * Mumford–Shah Loss Functional for Image Segmentation With Deep Learning
