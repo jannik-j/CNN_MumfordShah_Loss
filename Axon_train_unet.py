@@ -2,12 +2,27 @@ import time
 # import os
 import numpy as np
 from options.train_options import TrainOptions
-from LiTS_getDatabase_unet import DataProvider_LiTS
+from Axon_getDatabase_unet import DataProvider_Axon
 from models.models import create_model
 from util.visualizer import Visualizer
-from math import *
-# from util import html
+from math import ceil
+import util.util as util
+from collections import OrderedDict
 # import ipdb
+
+
+def getVisuals(model):
+    input = util.tensor2im(model.input_A[:, 0])
+
+    label = util.tensor2im(model.input_B[:, 0]) / 2
+
+    background = util.tensor2im(model.fake_B2[:, 0])
+    myelin = util.tensor2im(model.fake_B2[:, 1])
+    axon = util.tensor2im(model.fake_B2[:, 2])
+
+    visuals = OrderedDict([('input', input), ('label', label), ('background', background),
+                           ('myelin', myelin), ('axon', axon)])
+    return visuals
 
 
 opt = TrainOptions().parse()
@@ -15,7 +30,7 @@ opt = TrainOptions().parse()
 input_min       = 0
 input_max       = 400
 
-data_train = DataProvider_LiTS(opt.inputSize, opt.fineSize, opt.segType, opt.semi_rate, opt.input_nc,
+data_train = DataProvider_Axon(opt.inputSize, opt.fineSize, opt.segType, opt.semi_rate, opt.input_nc,
                                opt.dataroot, a_min=input_min, a_max=input_max, mode="train")
 dataset_size = data_train.n_data
 print('#training images = %d' % dataset_size)
@@ -42,7 +57,7 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
 
         if step % opt.display_step == 0:
             save_result = step % opt.update_html_freq == 0
-            visualizer.display_current_results(model.get_current_visuals(), epoch, save_result)
+            visualizer.display_current_results(getVisuals(model), epoch, save_result)
 
             errors = model.get_current_errors()
             t = (time.time() - iter_start_time) / opt.batchSize

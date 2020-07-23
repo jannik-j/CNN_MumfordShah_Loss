@@ -24,4 +24,6 @@ python LiTS_train_unet.py           ^
 --display_port 8097         ^
 --segType tumor ^
 --lambda_A 0.000001 ^
---checkpoints_dir ./checkpoints/LiTS_Tumor_semi
+--checkpoints_dir ./checkpoints/2020-07-13_LiTS_Single_semi__semi=10  ^
+--niter_decay 0 ^
+--no_html

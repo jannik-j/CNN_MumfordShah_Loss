@@ -9,7 +9,7 @@ python LiTS_train_unet.py           ^
 --no_dropout ^
 --norm batch ^
 --batchSize 4 ^
---semi_rate 10  ^
+--semi_rate 1  ^
 --lr 1e-5 ^
 --lr_policy step ^
 --lr_decay_iters 20 ^
@@ -22,6 +22,8 @@ python LiTS_train_unet.py           ^
 --plot_step 100             ^
 --save_epoch_freq 10        ^
 --display_port 8097         ^
---segType tumor ^
+--segType liver ^
 --lambda_A 0.000001 ^
---checkpoints_dir ./checkpoints/LiTS_Tumor_semi
+--checkpoints_dir ./checkpoints/2020-06-09_LiTS_Liver_semi__semi=1 ^
+--niter_decay 0 ^
+--no_html

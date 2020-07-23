@@ -1,14 +1,15 @@
 from __future__ import print_function, division, absolute_import, unicode_literals
 
 #import cv2
-import glob
+# import glob
 import numpy as np
-from PIL import Image
-import ipdb
-import matplotlib.pyplot as plt
-import torchvision.transforms as transforms
-import scipy.misc
+# from PIL import Image
+# import ipdb
+# import matplotlib.pyplot as plt
+# import torchvision.transforms as transforms
+# import scipy.misc
 import torch
+# import matplotlib.pyplot as plt
 
 class BaseDataProvider(object):
 
@@ -23,7 +24,8 @@ class BaseDataProvider(object):
 
         nx = data.shape[1]
         ny = data.shape[0]
-        return path, data.reshape(1, self.channels, ny, nx), labels.reshape(1, 1, ny, nx)
+        data = data.transpose(2, 0, 1)
+        return path, data.reshape(1, self.channels, nx, ny), labels.reshape(1, 1, ny, nx)
 
     def _process_data_labels(self, data, label):
         for ich in range(self.channels):
@@ -38,15 +40,19 @@ class BaseDataProvider(object):
 
     def __call__(self, n):
         path, data, labels = self._load_data_and_label()
-        nx = data.shape[1]
+        nx = data.shape[3]
         ny = data.shape[2]
-        X = torch.FloatTensor(n, self.channels, nx, ny).zero_()
-        Y = torch.FloatTensor(n, 1, nx, ny).zero_()
+        # X = torch.FloatTensor(n, self.channels, nx, ny).zero_()
+        X = torch.empty(n, self.channels, nx, ny, device='cuda:0').zero_()
+        Y = torch.empty(n, 1, nx, ny, device='cuda:0').zero_()
         P = []
 
-        for ich in range(data.shape[-1]):
-            X[0, ich] = self._toTorchFloatTensor(data[0, ich])[0]
-        Y[0, 0] = self._toTorchFloatTensor(labels[0, 0])[0]
+        # for ich in range(data.shape[-1]):
+        for ich in range(self.channels):
+            # X[0, ich] = self._toTorchFloatTensor(data[0, ich])[0]
+            X[0, ich] = self._toTorchFloatTensor(data[0, ich])
+        # Y[0, 0] = self._toTorchFloatTensor(labels[0, 0])[0]
+        Y[0, 0] = self._toTorchFloatTensor(labels[0, 0])
         P.append(path)
 
         for i in range(1, n):
@@ -54,9 +60,12 @@ class BaseDataProvider(object):
                 break
             path, data, labels = self._load_data_and_label()
 
-            for ich in range(data.shape[-1]):
-                X[i, ich] = self._toTorchFloatTensor(data[0, ich])[0]
-            Y[i, 0] = self._toTorchFloatTensor(labels[0, 0])[0]
+            # for ich in range(data.shape[-1]):
+            for ich in range(self.channels):
+                # X[i, ich] = self._toTorchFloatTensor(data[0, ich])[0]
+                X[i, ich] = self._toTorchFloatTensor(data[0, ich])
+            # Y[i, 0] = self._toTorchFloatTensor(labels[0, 0])[0]
+            Y[i, 0] = self._toTorchFloatTensor(labels[0, 0])
             P.append(path)
 
         return X, Y, P

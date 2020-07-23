@@ -11,12 +11,12 @@ import numpy as np
 import torch.nn.functional as F
 from torch.autograd import Variable
 
+
 class levelsetLoss(nn.Module):
     def __init__(self):
         super(levelsetLoss, self).__init__()
 
     def forward(self, output, target):
-        # input size = batch x 1 (channel) x height x width
         outshape = output.shape
         tarshape = target.shape
         loss = 0.0
@@ -29,7 +29,8 @@ class levelsetLoss(nn.Module):
             pLoss = plevel * plevel * output
             loss += torch.sum(pLoss)
         return loss
-		
+
+
 class gradientLoss2d(nn.Module):
     def __init__(self, penalty='l1'):
         super(gradientLoss2d, self).__init__()
@@ -44,4 +45,3 @@ class gradientLoss2d(nn.Module):
 
         loss = torch.sum(dH) + torch.sum(dW)
         return loss
-

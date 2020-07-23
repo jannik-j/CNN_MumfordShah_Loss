@@ -1,4 +1,4 @@
-python LiTS_train_unet.py           ^
+python LiTS_test_unet.py           ^
 --dataroot F:\Daten_Bachelorarbeit ^
 --gpu_ids 0                 ^
 --name LiTS_subpixelUnet_Adam    ^
@@ -8,13 +8,13 @@ python LiTS_train_unet.py           ^
 --optim Adam ^
 --no_dropout ^
 --norm batch ^
---batchSize 4 ^
---semi_rate 10  ^
+--batchSize 1 ^
+--semi_rate 1  ^
 --lr 1e-5 ^
 --lr_policy step ^
 --lr_decay_iters 20 ^
 --inputSize 512 ^
---fineSize 256 ^
+--fineSize 512 ^
 --input_nc 3 ^
 --output_nc 2 ^
 --niter 50 ^
@@ -24,4 +24,6 @@ python LiTS_train_unet.py           ^
 --display_port 8097         ^
 --segType tumor ^
 --lambda_A 0.000001 ^
---checkpoints_dir ./checkpoints/LiTS_Tumor_semi
+--checkpoints_dir ./checkpoints/2020-07-13_LiTS_Single_semi__semi=10 ^
+--isTrain False ^
+--which_epoch 40

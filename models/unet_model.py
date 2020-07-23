@@ -1,16 +1,17 @@
 import numpy as np
 import torch
-import os
+# import os
 from collections import OrderedDict
 from torch.autograd import Variable
-import itertools
+# from torch import tensor
+# import itertools
 import util.util as util
 from .base_model import BaseModel
 from . import networks_unet
 from .loss import *
-from . import loss
-import sys
-import ipdb
+# from . import loss
+# import sys
+# import ipdb
 
 
 class UNetModel(BaseModel):
@@ -74,9 +75,10 @@ class UNetModel(BaseModel):
         self.real_B = Variable(self.input_B)
 
     def test(self):
-        real_A = Variable(self.input_A, volatile=True)
+        # real_A = Variable(self.input_A, volatile=True)
+        real_A = (self.input_A).clone().detach()
         fake_B = self.net(real_A)
-        fake_B2 = torch.clamp(fake_B[:, 0:2], 1e-10, 1.0)
+        fake_B2 = torch.clamp(fake_B[:, :], 1e-10, 1.0)
 
         self.fake_B2 = fake_B2.data
         self.fake_B = fake_B.data
@@ -87,8 +89,8 @@ class UNetModel(BaseModel):
 
     def backward_G(self):
         fake_B = self.net(self.real_A)
-        fake_B2 = torch.clamp(fake_B[:, 0:2], 1e-10, 1.0)
-        
+        fake_B2 = torch.clamp(fake_B[:, :], 1e-10, 1.0)
+
         loss_C = 0
         numch = 0
         for ibatch in range(self.real_B.shape[0]):
@@ -104,15 +106,15 @@ class UNetModel(BaseModel):
         else:
             self.loss_C = 0
 
-        loss_L = self.criterionLS(fake_B2, self.real_A)
-        loss_A = self.criterionTV(fake_B2) *0.001
-        loss_LS = (loss_L + loss_A) * self.opt.lambda_A
-        
-        loss_tot = loss_C+loss_LS
+        # loss_L = self.criterionLS(fake_B2, self.real_A)
+        # loss_A = self.criterionTV(fake_B2) *0.001
+        # loss_LS = (loss_L + loss_A) * self.opt.lambda_A
+
+        loss_tot = loss_C # +loss_LS
         loss_tot.backward()
 
         self.fake_B2= fake_B2.data
-        self.loss_LS = loss_LS.item()
+        self.loss_LS = 0 # loss_LS.item()
 
     def optimize_parameters(self):
         # forward

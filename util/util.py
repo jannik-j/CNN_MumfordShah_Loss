@@ -3,10 +3,10 @@ import torch
 import numpy as np
 from PIL import Image
 import inspect, re
-import numpy as np
 import os
 import collections
-import scipy.misc
+# import scipy.misc
+# import matplotlib.pyplot as plt
 
 # Converts a Tensor into a Numpy array
 # |imtype|: the desired type of the converted numpy array
@@ -20,8 +20,8 @@ def tensor2im(image_tensor, imtype=np.float32):
         image_numpy = image_numpy[1].reshape(1, imgSize[1], imgSize[2])
 
     image_numpy = np.tile(image_numpy, (3, 1, 1))
-    image_numpy = (np.transpose(image_numpy, (1, 2, 0))) * 255.0
-    # image_numpy = np.transpose(image_numpy, (1, 2, 0)) * 255.0
+    # image_numpy = (np.transpose(image_numpy, (1, 2, 0))) * 255.0
+    image_numpy = np.transpose(image_numpy, (1, 2, 0)) * 255.0
     return image_numpy.astype(imtype)
 
 
@@ -39,8 +39,9 @@ def diagnose_network(net, name='network'):
 
 
 def save_image(image_numpy, image_path):
-    # image_pil = Image.fromarray(image_numpy)
-    image_pil = scipy.misc.toimage(image_numpy)
+    image_pil = Image.fromarray(image_numpy[0])
+    # image_pil = scipy.misc.toimage(image_numpy)
+    image_pil = image_pil.convert("L")
     image_pil.save(image_path)
 
 def info(object, spacing=10, collapse=1):
