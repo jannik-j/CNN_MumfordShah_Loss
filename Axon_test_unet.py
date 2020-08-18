@@ -42,8 +42,14 @@ for step in range(dataset_size):
     model.set_input(data)
     model.test()
 
-    score_dice = dice(model.fake_B2[0], batch_y[0, 0])
-    score_iou = iou(model.fake_B2[0], batch_y[0, 0])
+    out = torch.argmax(model.fake_B2[0], dim=0)
+    background = (out == 0).float()
+    myelin = (out == 1).float()
+    axon = (out == 2).float()
+    map = torch.stack((background, myelin, axon))
+    # print(map.shape)
+    score_dice = dice(map, batch_y[0, 0])
+    score_iou = iou(map, batch_y[0, 0])
     dice_cumul += score_dice
     iou_cumul += score_iou
 

@@ -24,6 +24,6 @@ python Axon_test_unet.py           ^
 --display_port 8097         ^
 --segType tem ^
 --lambda_A 0.000001 ^
---checkpoints_dir ./checkpoints/2020-07-22_Axon_semi__semi=3 ^
+--checkpoints_dir ./checkpoints/2020-07-28_Axon_semi_nomsloss_semi=10 ^
 --isTrain False ^
---which_epoch 500
+--which_epoch 600

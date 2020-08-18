@@ -24,6 +24,6 @@ python LiTS_test_unet.py           ^
 --display_port 8097         ^
 --segType tumor ^
 --lambda_A 0.000001 ^
---checkpoints_dir ./checkpoints/2020-07-13_LiTS_Single_semi__semi=10 ^
+--checkpoints_dir ./checkpoints/2020-06-16_LiTS_Single_semi__semi=3 ^
 --isTrain False ^
---which_epoch 40
+--which_epoch 20

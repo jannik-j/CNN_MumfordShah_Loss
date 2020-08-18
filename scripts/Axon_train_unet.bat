@@ -9,7 +9,7 @@ python Axon_train_unet.py           ^
 --no_dropout ^
 --norm batch ^
 --batchSize 8 ^
---semi_rate 1  ^
+--semi_rate 10  ^
 --lr 0.01 ^
 --lr_policy step ^
 --lr_decay_iters 100 ^
@@ -23,7 +23,7 @@ python Axon_train_unet.py           ^
 --save_epoch_freq 100        ^
 --display_port 8097         ^
 --segType tem ^
---lambda_A 0.000001 ^
---checkpoints_dir ./checkpoints/2020-07-23_Axon_semi_nomsloss_semi=1  ^
+--lambda_A 0.0000001 ^
+--checkpoints_dir ./checkpoints/2020-07-29_Axon_semi_beta=10-7_semi=10  ^
 --niter_decay 0 ^
 --no_html

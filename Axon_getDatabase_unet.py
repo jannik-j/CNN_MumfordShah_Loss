@@ -30,6 +30,7 @@ class DataProvider_Axon:
         self.filePath = []
 
         for isub, filefold in enumerate(filefolds):
+            # if isub % self.semi_rate != 0: continue # Um Daten bei Training ohne msloss wegzulassen
             foldpath = os.path.join(path_, filefold)
 
             fileNameData = os.path.join(foldpath, 'image.png')

@@ -11,44 +11,7 @@ from util import html
 import scipy.io as sio
 import torch
 import matplotlib.pyplot as plt
-
-
-def iou(out, true, smooth=1):
-    true_ = torch.stack((true.clone().detach(), true.clone().detach()))
-    true_[0] = 1 - true_[0]
-    out_ = out.clone().detach()
-    intersection = torch.sum(torch.abs(out_*true_), (1, 2))
-    union = torch.sum(out_, (1, 2)) + torch.sum(true_, (1, 2)) - intersection
-    iou = torch.mean((intersection+smooth) / (union+smooth), 0)
-    return iou.item()
-
-
-def dice(out, true, smooth=1):
-    true_ = torch.stack((true.clone().detach(), true.clone().detach()))
-    true_[0] = 1 - true_[0]
-    out_ = out.clone().detach()
-    intersection = torch.sum(torch.abs(out_*true_), (1, 2))
-    union = torch.sum(out_, (1, 2)) + torch.sum(true_, (1, 2))
-    dice = torch.mean((2.*intersection + smooth) / (union+smooth), 0)
-    return dice.item()
-
-
-def iou_tumoronly(out, true):
-    true_ = true.clone().detach()
-    out_ = out.clone().detach()
-    intersection = torch.sum(torch.abs(out_*true_), (0, 1))
-    union = torch.sum(out_, (0, 1)) + torch.sum(true_, (0, 1)) - intersection
-    iou = intersection/union
-    return iou.item()
-
-
-def dice_tumoronly(out, true):
-    true_ = true.clone().detach()
-    out_ = out.clone().detach()
-    intersection = torch.sum(torch.abs(out_*true_), (0, 1))
-    union = torch.sum(out_, (0, 1)) + torch.sum(true_, (0, 1))
-    dice = (2.*intersection) / union
-    return dice.item()
+from scores import dice, iou
 
 
 def getBothVisuals(visuals_liver, visuals_tumor):
@@ -84,11 +47,11 @@ if opt.segType != 'both':
         model.test()
 
         # Falls nötig #
-        model.fake_B2[0, 0] = (model.fake_B2[0, 0] > 0.6).float()
-        model.fake_B2[0, 1] = (model.fake_B2[0, 1] > 0.4).float()
+        # model.fake_B2[0, 0] = (model.fake_B2[0, 0] > 0.6).float()
+        # model.fake_B2[0, 1] = (model.fake_B2[0, 1] > 0.4).float()
         #################
-        # model.fake_B2[0, 0] = (model.fake_B2[0, 0] > 0.5).float()
-        # model.fake_B2[0, 1] = (model.fake_B2[0, 1] > 0.5).float()
+        model.fake_B2[0, 0] = (model.fake_B2[0, 0] > 0.5).float()
+        model.fake_B2[0, 1] = (model.fake_B2[0, 1] > 0.5).float()
 
         score_dice = dice(model.fake_B2[0], batch_y[0, 0])
         score_iou = iou(model.fake_B2[0], batch_y[0, 0])
