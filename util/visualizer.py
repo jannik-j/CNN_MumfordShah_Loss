@@ -1,17 +1,25 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import ntpath
 import time
-# import ipdb
 from . import util
 from . import html
 import scipy.ndimage as ndimage
 
+"""
+Aus der originalen Implementation
+Enthält die Klasse Visualizer
+"""
+
 
 class Visualizer():
+    """
+    Verwaltet die Visualisierung des Trainigs/Testens über visdom
+    Speichert den Verlauf der Kostenfunktionen in einer Textdatei
+    """
+
     def __init__(self, opt):
-        # self.opt = opt
+        # Speicherung der für die Klasse wichtigen Kommandozeilenargumente
         self.display_id = opt.display_id
         self.use_html = opt.isTrain and not opt.no_html
         self.win_size = opt.display_winsize
@@ -22,6 +30,8 @@ class Visualizer():
             import visdom
             self.vis = visdom.Visdom(port=opt.display_port)
 
+        # Falls der Fortschritt als .html-Datei gespeichert werden soll, werden
+        # dafür Verzeichnisse erstellt
         if self.use_html:
             self.web_dir = os.path.join(opt.checkpoints_dir, opt.name, 'web')
             self.img_dir = os.path.join(self.web_dir, 'images')
@@ -35,9 +45,10 @@ class Visualizer():
     def reset(self):
         self.saved = False
 
-    # |visuals|: dictionary of images to display or save\
-
     def display_current_results(self, visuals, epoch, save_result):
+        """
+        Zeigt die Bilder in visdom an, die als OrderedDict in visuals übergeben werden
+        """
         if self.display_id > 0:  # show images in the browser
             ncols = self.opt.display_single_pane_ncols
             if ncols > 0:
@@ -79,7 +90,8 @@ class Visualizer():
                                    win=self.display_id + idx)
                     idx += 1
 
-        if self.use_html and (save_result or not self.saved):  # save images to a html file
+        if self.use_html and (save_result or not self.saved):
+            """ Update der .html-Datei """"
             self.saved = True
             for label, image_numpy in visuals.items():
                 img_path = os.path.join(self.img_dir, 'epoch%.3d_%s.png' % (epoch, label))
@@ -100,8 +112,11 @@ class Visualizer():
                 webpage.add_images(ims, txts, links, width=self.win_size)
             webpage.save()
 
-    # errors: dictionary of error labels and values
     def plot_current_errors(self, epoch, counter_ratio, opt, errors):
+        """
+        Plot der Werte der Kostenfunktionen. Diese werden als OrderedDict in
+        errors übergeben
+        """
         if not hasattr(self, 'plot_data'):
             self.plot_data = {'X': [], 'Y': [], 'legend': list(errors.keys())}
         self.plot_data['X'].append(epoch + counter_ratio)
@@ -116,9 +131,8 @@ class Visualizer():
                 'ylabel': 'loss'},
             win=self.display_id)
 
-
-    # errors: same format as |errors| of plotCurrentErrors
     def print_current_errors(self, epoch, i, iters, errors, t, mode):
+        """ Ausgabe der Werte der Kostenfunktionen in der Konsole """
         message = '(%s - epoch: %d | iters: %d/%d | time: %.3f) ' % (mode, epoch, i, iters, t)
         for k, v in errors.items():
             message += '%s: %.3f ' % (k, v)
@@ -127,11 +141,11 @@ class Visualizer():
         with open(self.log_name, "a") as log_file:
             log_file.write('%s\n' % message)
 
-    # save image to the disk
     def save_images(self, webpage, visuals, image_path):
+        """
+        Speicherung eines Bildes als Datei und Einbinden dieser in die .html-Datei
+        """
         image_dir = webpage.get_image_dir()
-        # short_path = ntpath.basename(image_path[0])
-        # name = os.path.splitext(short_path)[0]
 
         short_path = image_path.split('/')
         name = short_path[-1]
@@ -151,6 +165,10 @@ class Visualizer():
         webpage.add_images(ims, txts, links, width=self.win_size)
 
     def save_data_plt(self, webpage, visuals, pred_gt, pred, image_path):
+        """
+        Speichert die Daten, die als OrderedDict in visuals gegeben sind, über
+        matplotlib.pyplot als .png-Datei
+        """
         image_dir = webpage.get_image_dir()
         short_path = image_path.split('/')
         name = short_path[-1]
@@ -173,7 +191,6 @@ class Visualizer():
             txts.append(label)
             links.append(image_name)
 
-
         image_name = '%s_%s.png' % (name, 'pred_gt')
         save_path = os.path.join(image_dir, image_name)
         img = pred_gt.astype(float)
@@ -189,7 +206,9 @@ class Visualizer():
         webpage.add_images(ims, txts, links, width=self.win_size)
 
     def save_result_fig(self, img, imgName, image_dir, image_path):
-        # image_dir = webpage.get_image_dir()
+        """
+        Speichert ein numpy-Array über matplotlib.pyplot als .png-Datei
+        """
         short_path = image_path.split('\\')
         name = short_path[-1]
         image_name = '%s_%s.png' % (name, imgName)
@@ -200,105 +219,3 @@ class Visualizer():
         plt.axis('off')
         plt.savefig(save_path)
         plt.close()
-
-    def predict_output(self, label, visuals):
-        label = np.array(label) > 0
-
-        prediction_ = (visuals['fake_B'][0,0].cpu().float().numpy())
-        # prediction = prediction_ >= (np.amax(prediction_))
-        # prediction = prediction_ > ((np.amax(label_))/float(2))
-
-        # Threshold: whole_F = 0.02 / core_F = -0.25 / enhance_C = -0.7
-        prediction = prediction_ > -0.4
-        return label, prediction
-
-    def predict_output_v2(self, label, visuals):
-        label = np.array(label) > 0
-
-        prediction_ = (visuals['fake_B_CE'][0,0,:,:].cpu().float().numpy())
-        # prediction = prediction_ >= (np.amax(prediction_))
-        # prediction = prediction_ > ((np.amax(label_))/float(2))
-
-        # Threshold: whole_F = 0.02 / core_F = -0.25 / enhance_C = -0.7
-        prediction = prediction_ > 0.5
-        return label, prediction
-
-    def predict_output_seg_only(self, label, visuals):
-        label = np.array(label) > 0
-
-        prediction_ = (visuals['fake_B'][0,0,:,:].cpu().float().numpy())
-        # prediction = prediction_ >= (np.amax(prediction_))
-        # ipdb.set_trace()
-
-        # Threshold: whole_F = -0.7
-        prediction = prediction_ > 0.7
-        return label, prediction
-
-    def morphology_operation_liver(self, pred):
-        pred = pred.astype(int)
-        struct1 = ndimage.generate_binary_structure(2, 1)
-        # pred = ndimage.binary_dilation(pred, structure=struct1, iterations=1)
-        # struct = ndimage.generate_binary_structure(2, 2)
-        # pred = ndimage.binary_erosion(pred, structure=struct, iterations=1)
-
-        # pred = ndimage.binary_opening(pred, structure=struct1, iterations=2)
-        pred = ndimage.binary_closing(pred, structure=struct1, iterations=2)
-        # pred = ndimage.binary_opening(pred, structure=struct1, iterations=2)
-        # pred = ndimage.binary_closing(pred, structure=struct1, iterations=1)
-        # pred = ndimage.binary_fill_holes(pred)
-
-        # pred = ndimage.binary_closing(pred, structure=struct, iterations=2)
-        # pred = ndimage.binary_dilation(pred, structure=struct1, iterations=1)
-        # ipdb.set_trace()
-        return pred
-
-    def morphology_operation_tumor(self, pred):
-        pred = pred.astype(int)
-        struct1 = ndimage.generate_binary_structure(2, 1)
-        # pred = ndimage.binary_dilation(pred, structure=struct1, iterations=1)
-        # struct = ndimage.generate_binary_structure(2, 2)
-        # pred = ndimage.binary_erosion(pred, structure=struct, iterations=1)
-        # pred = ndimage.binary_fill_holes(pred)
-        pred = ndimage.binary_opening(pred, structure=struct1, iterations=2)
-        pred = ndimage.binary_closing(pred, structure=struct1, iterations=1)
-        pred = ndimage.binary_opening(pred, structure=struct1, iterations=2)
-
-        # pred = ndimage.binary_opening(pred, structure=struct1, iterations=1)
-        # pred = ndimage.binary_closing(pred, structure=struct1, iterations=1)
-
-        # pred = ndimage.binary_closing(pred, structure=struct, iterations=2)
-        # pred = ndimage.binary_dilation(pred, structure=struct1, iterations=1)
-        # ipdb.set_trace()
-        return pred
-
-
-    def calculate_score(self, label, pred,  score):
-        if score == "dice":
-            intersect = float(np.sum(pred.astype(int) * label.astype(int)))
-            union = float(np.sum(pred.astype(int)) + np.sum(label.astype(int)))
-            return (2 * intersect) / union
-
-        elif score == "iou":
-            intersect = float(np.sum(pred.astype(int) * label.astype(int)))
-            union = float(np.sum(np.logical_or(pred, label).astype(int)))
-            return (intersect / union)
-
-        elif score == "voe":
-            intersect = float(np.sum(pred.astype(int) * label.astype(int)))
-            union = float(np.sum(np.logical_or(pred, label).astype(int)))
-            return 1 - (intersect / union)
-
-        elif score == "sens":
-            TP = float(np.sum(pred.astype(int) * label.astype(int)))
-            FN = float(np.sum((~pred).astype(int) * (label).astype(int)))
-            if TP + FN == 0:
-                return 0
-            return TP/(TP+FN)
-
-        elif score == "ppv":
-            TP = float(np.sum(pred.astype(int) * label.astype(int)))
-            FP = float(np.sum(pred.astype(int) * (~label).astype(int)))
-            if TP + FP == 0:
-                return 0
-
-            return TP / (TP + FP)

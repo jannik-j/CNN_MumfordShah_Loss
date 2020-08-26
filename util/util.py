@@ -5,12 +5,17 @@ from PIL import Image
 import inspect, re
 import os
 import collections
-# import scipy.misc
-# import matplotlib.pyplot as plt
 
-# Converts a Tensor into a Numpy array
-# |imtype|: the desired type of the converted numpy array
+"""
+Aus der originalen Implementation
+Enthält Hilfsfunktionen
+"""
+
+
 def tensor2im(image_tensor, imtype=np.float32):
+    """
+    Konvertiert einen torch-Tensor zu einem Numpy-Array des Datentyps imtype
+    """
     image_numpy = image_tensor[0].cpu().float().numpy()
     imgSize = image_numpy.shape
 
@@ -39,10 +44,11 @@ def diagnose_network(net, name='network'):
 
 
 def save_image(image_numpy, image_path):
+    """ Speichern eines Numpy-Arrays als Bild """
     image_pil = Image.fromarray(image_numpy[0])
-    # image_pil = scipy.misc.toimage(image_numpy)
     image_pil = image_pil.convert("L")
     image_pil.save(image_path)
+
 
 def info(object, spacing=10, collapse=1):
     """Print methods and doc strings.
@@ -54,13 +60,17 @@ def info(object, spacing=10, collapse=1):
                       processFunc(str(getattr(object, method).__doc__)))
                      for method in methodList]) )
 
+
 def varname(p):
     for line in inspect.getframeinfo(inspect.currentframe().f_back)[3]:
         m = re.search(r'\bvarname\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)', line)
         if m:
             return m.group(1)
 
+
 def print_numpy(x, val=True, shp=False):
+    """ Gibt Mittelwert, Minimum, Maximum, Median und Standardabweichung eines
+    Numpy-Arrays aus """
     x = x.astype(np.float64)
     if shp:
         print('shape,', x.shape)

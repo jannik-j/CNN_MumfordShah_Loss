@@ -2,8 +2,17 @@ import dominate
 from dominate.tags import *
 import os
 
+"""
+Aus der originalen Implementation
+Enthält die Klasse HTML
+"""
+
 
 class HTML:
+    """
+    Speichert den Fortschritt des Trainings in .html-Dateien
+    Verwendung kann durch das Kommandozeilenargument --no_html unterdrückt werden
+    """
     def __init__(self, web_dir, title, reflesh=0):
         self.title = title
         self.web_dir = web_dir
