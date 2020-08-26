@@ -7,7 +7,7 @@ from math import ceil
 
 """
 Aus der originalen Implementation
-Skript zum Testen auf dem LiTS Datensatz
+Skript zum Training eines Netzwerks auf dem LiTS Datensatz
 """
 
 # Parsen der Kommandozeilenargumente
@@ -74,4 +74,5 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
     print('End of epoch %d / %d \t Time Taken: %d sec' %
           (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
 
+    # Update der Lernrate
     model.update_learning_rate()

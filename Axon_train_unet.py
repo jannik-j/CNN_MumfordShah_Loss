@@ -1,6 +1,4 @@
 import time
-# import os
-import numpy as np
 from options.train_options import TrainOptions
 from Axon_getDatabase_unet import DataProvider_Axon
 from models.models import create_model
@@ -8,10 +6,18 @@ from util.visualizer import Visualizer
 from math import ceil
 import util.util as util
 from collections import OrderedDict
-# import ipdb
+
+"""
+Selbst verfasst, in Anlehnung an LiTS_train_unet.py
+Skript zum Training eines Netzwerks auf dem Datensatz zur Axon-Myelin-Segmentierung
+"""
 
 
 def getVisuals(model):
+    """
+    Hilsfunktion, um die aktuellen Ein- und Ausgaben in das Netzwerk über visdom
+    korrekt darzustellen
+    """
     input = util.tensor2im(model.input_A[:, 0])
 
     label = util.tensor2im(model.input_B[:, 0]) / 2
@@ -25,11 +31,13 @@ def getVisuals(model):
     return visuals
 
 
+# Parsen der Kommandozeilenargumente
 opt = TrainOptions().parse()
 
 input_min       = 0
 input_max       = 400
 
+# Laden der Trainingsdaten durch die Klasse DataProvider_Axon
 data_train = DataProvider_Axon(opt.inputSize, opt.fineSize, opt.segType, opt.semi_rate, opt.input_nc,
                                opt.dataroot, a_min=input_min, a_max=input_max, mode="train")
 dataset_size = data_train.n_data
@@ -37,24 +45,29 @@ print('#training images = %d' % dataset_size)
 training_iters = int(ceil(data_train.n_data/float(opt.batchSize)))
 
 total_steps = 0
+# Erstellung und Initialisierung eines neuen Netzwerks
 model = create_model(opt)
+# Initialisierung einer visdom-Session
 visualizer = Visualizer(opt)
 
 for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
+    """ Schleife über die Epochen """
     epoch_start_time = time.time()
 
-    """ Train """
     for step in range(1, training_iters+1):
+        """ Schleife über die Minibatches """
+        # Laden der Daten eines Minibatches
         batch_x, batch_y, path = data_train(opt.batchSize)
         data = {'A': batch_x, 'B': batch_y,
                 'A_paths': path, 'B_paths': path}
-        # print('Epoch %d, step %d' % (epoch, step))
         iter_start_time = time.time()
         visualizer.reset()
         total_steps += 1
         model.set_input(data)
+        # Auswertung des Netzwerks und Durchführung eines Schritts des Optimierers
         model.optimize_parameters()
 
+        # Visualisierung des Trainingsfortschritts über visdom
         if step % opt.display_step == 0:
             save_result = step % opt.update_html_freq == 0
             visualizer.display_current_results(getVisuals(model), epoch, save_result)
@@ -72,6 +85,7 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
                   (epoch, total_steps))
             model.save('latest')
 
+    # Speicherung der aktuellen Netzwerkparameter
     if epoch % opt.save_epoch_freq == 0:
         print('saving the model at the end of epoch %d, iters %d' %
               (epoch, total_steps))
@@ -80,4 +94,5 @@ for epoch in range(opt.epoch_count, opt.niter + opt.niter_decay + 1):
     print('End of epoch %d / %d \t Time Taken: %d sec' %
           (epoch, opt.niter + opt.niter_decay, time.time() - epoch_start_time))
 
+    # Update der Lernrate
     model.update_learning_rate()

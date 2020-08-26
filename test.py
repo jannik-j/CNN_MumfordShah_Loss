@@ -87,14 +87,14 @@ ax2.axis('off')
 ax3.axis('off')
 plt.show()
 """
-
+"""
 x = np.linspace(-5, 5, 1000)
 plt.plot(x, np.clip(x, 0, None))
 plt.xlabel(r'$z$')
 plt.ylabel(r'$r(z)$')
 plt.axis('equal')
 plt.show()
-
+"""
 """
 file = sio.loadmat('F:/Daten_Bachelorarbeit/example_tumor/118/243.mat')
 label = file['labels']
@@ -102,3 +102,26 @@ plt.imshow(label, cmap='gray')
 plt.axis('off')
 plt.show()
 """
+"""
+file = sio.loadmat('F:/Daten_Bachelorarbeit/train/13/363.mat')
+data = file['data']
+data = np.clip(data+124, 0, 400)
+label = file['labels']
+plt.imshow(label==2, cmap='gray')
+plt.axis('off')
+plt.show()
+"""
+"""
+H = sio.loadmat('F:/QSync/Uni/MATLAB/Mathematische Bildverarbeitung/material01/sol01/hist_fingerprint.mat')['H']
+plt.plot(H[0])
+plt.xlabel('Grauwert')
+plt.ylabel('Häufigkeit')
+plt.plot(125, 0, 'ro')
+plt.show()
+"""
+H = sio.loadmat('F:/QSync/Uni/MATLAB/Mathematische Bildverarbeitung/material01/sol01/hist_fingerprint.mat')['H']
+plt.plot(H[0])
+plt.xlabel('Grauwert')
+plt.ylabel('Häufigkeit')
+plt.plot(125, 0, 'ro')
+plt.show()

@@ -45,7 +45,7 @@ class DataProvider_LiTS(BaseDataProvider):
         self.filePath = []
 
         for isub, filefold in enumerate(filefolds):
-            # if isub % 10 != 0: continue  # Auskommentieren für Weglassen von Daten bei Training ohne msloss
+            # if isub % 10 != 0: continue  # Für Weglassen von Daten bei Training ohne msloss
 
             foldpath = os.path.join(path_, filefold)
             dataFold = sorted(os.listdir(foldpath))
@@ -63,8 +63,8 @@ class DataProvider_LiTS(BaseDataProvider):
                 # Prüft, ob mindestens ein Pixel in Bild und Label nicht 0 ist
                 if np.amax(data) == 0: continue
                 if np.amax(label) == 0: continue
-                # if self.segtype == "tumor": # or self.segtype == "both":
-                #     if np.amax(label)!=2: continue  # AUSKOMMENTIEREN FÜR ALLE BILDER BEI TUMOR
+                if self.segtype == "tumor": # or self.segtype == "both":
+                    if np.amax(label)!=2: continue  # AUSKOMMENTIEREN FÜR ALLE BILDER BEI TUMOR
                 self.imageNum.append((foldpath, dataFile[islice], isub))
 
         if self.mode == "train":

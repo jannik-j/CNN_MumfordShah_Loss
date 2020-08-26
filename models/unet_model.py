@@ -106,15 +106,15 @@ class UNetModel(BaseModel):
         else:
             self.loss_C = 0
 
-        loss_L = self.criterionLS(fake_B2, self.real_A)
-        loss_A = self.criterionTV(fake_B2) *0.001
-        loss_LS = (loss_L + loss_A) * self.opt.lambda_A
+        # loss_L = self.criterionLS(fake_B2, self.real_A)
+        # loss_A = self.criterionTV(fake_B2) *0.001
+        # loss_LS = (loss_L + loss_A) * self.opt.lambda_A
 
-        loss_tot = loss_C +loss_LS
+        loss_tot = loss_C #+loss_LS
         loss_tot.backward()
 
         self.fake_B2 = fake_B2.data
-        self.loss_LS = loss_LS.item()
+        self.loss_LS = 0 # loss_LS.item()
 
     def optimize_parameters(self):
         # forward

@@ -15,7 +15,8 @@ Skript zum Testen auf dem LiTS Datensatz
 def getBothVisuals(visuals_liver, visuals_tumor):
     """
     Hilfsfunktion, um die Ein- und Ausgaben aller beteiligten Netzwerke und
-    deren Label beim Testen von zwei Netzwerken, die hintereinander ausgeführt werden
+    deren Label beim Testen von zwei Netzwerken, die hintereinander ausgeführt werden,
+    zu visualisieren
     """
     visuals = OrderedDict([('Slice0', visuals_liver['real_A1']), ('Slice1', visuals_liver['real_A2']),
                            ('Slice2', visuals_liver['real_A3']), ('Label_Liver', visuals_liver['real_B2']),
