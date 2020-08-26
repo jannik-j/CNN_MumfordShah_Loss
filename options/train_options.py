@@ -1,8 +1,23 @@
 from .base_options import BaseOptions
 
+"""
+Aus der originalen Implementation
+Enthält die Klasse TrainOptions
+"""
+
 
 class TrainOptions(BaseOptions):
+    """
+    Erbt von BaseOptions
+    Fügt weitere Kommandozeilenargumente hinzu
+    """
+
     def initialize(self):
+        """
+        Bei der Initialisierung werden die Kommandozeilenargumente gelesen
+        Die jeweiligen Beschreibungen sind in den nächsten Zeilen gegeben
+        """
+        # Initialisierung der Mutterklasse. Dadurch werden die dortigen Argumente gelesen
         BaseOptions.initialize(self)
 
         self.parser.add_argument('--display_step', type=int, default=100, help='frequency of showing training results on screen')

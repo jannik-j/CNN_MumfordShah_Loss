@@ -4,12 +4,26 @@ from util import util
 import torch
 
 
+"""
+Aus der originalen Implementation
+Enthält die Klasse BaseOptions zur Verarbeitung der Kommandozeilenargumente
+"""
+
+
 class BaseOptions():
+    """
+    Klasse zur Verarbeitung der grundlegenden Kommandozeilenargumente
+    """
+
     def __init__(self):
         self.parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
         self.initialized = False
 
     def initialize(self):
+        """
+        Bei der Initialisierung werden die Kommandozeilenargumente gelesen
+        Die jeweiligen Beschreibungen sind in den nächsten Zeilen gegeben
+        """
         self.parser.add_argument('--dataroot', required=True, help='path to images (should have subfolders trainA, trainB, valA, valB, etc)')
         self.parser.add_argument('--batchSize', type=int, default=1, help='input batch size')
         self.parser.add_argument('--inputSize', type=int, default=256, help='input image size')
@@ -24,7 +38,7 @@ class BaseOptions():
         self.parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
         self.parser.add_argument('--name', type=str, default='experiment_name', help='name of the experiment. It decides where to store samples and models')
         self.parser.add_argument('--model', type=str, default='cycle_gan',
-                                 help='chooses which model to use. cycle_gan, pix2pix, test')
+                                 help='chooses which model to use. cycle_gan, pix2pix, test, unet')
         self.parser.add_argument('--nThreads', default=2, type=int, help='# threads for loading data')
         self.parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')
         self.parser.add_argument('--norm', type=str, default='instance', help='instance normalization or batch normalization')
@@ -38,10 +52,13 @@ class BaseOptions():
         self.initialized = True
 
     def parse(self):
+        """
+        Parsen der Kommandozeilenargumente
+        Festlegen, ob torch die CPU oder GPU verwenden soll
+        """
         if not self.initialized:
             self.initialize()
         self.opt = self.parser.parse_args()
-        # self.opt.isTrain = self.isTrain   # train or test
 
         str_ids = self.opt.gpu_ids.split(',')
         self.opt.gpu_ids = []
@@ -50,18 +67,19 @@ class BaseOptions():
             if id >= 0:
                 self.opt.gpu_ids.append(id)
 
-        # set gpu ids
+        # Festlegen der GPU-IDs
         if len(self.opt.gpu_ids) > 0:
             torch.cuda.set_device(self.opt.gpu_ids[0])
 
         args = vars(self.opt)
 
+        # Ausgabe der Optionen
         print('------------ Options -------------')
         for k, v in sorted(args.items()):
             print('%s: %s' % (str(k), str(v)))
         print('-------------- End ----------------')
 
-        # save to the disk
+        # Speicherung der Optionen in eine .txt-Datei
         expr_dir = os.path.join(self.opt.checkpoints_dir, self.opt.name)
         util.mkdirs(expr_dir)
         file_name = os.path.join(expr_dir, 'opt.txt')

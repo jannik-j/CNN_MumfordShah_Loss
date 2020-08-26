@@ -91,7 +91,7 @@ class Visualizer():
                     idx += 1
 
         if self.use_html and (save_result or not self.saved):
-            """ Update der .html-Datei """"
+            """ Update der .html-Datei """
             self.saved = True
             for label, image_numpy in visuals.items():
                 img_path = os.path.join(self.img_dir, 'epoch%.3d_%s.png' % (epoch, label))

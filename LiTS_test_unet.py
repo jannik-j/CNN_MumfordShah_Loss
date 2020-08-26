@@ -7,7 +7,7 @@ import torch
 from scores import dice, iou
 
 """
-Aus der originalen Implementation
+Selbst verfasst
 Skript zum Testen auf dem LiTS Datensatz
 """
 
