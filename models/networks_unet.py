@@ -1,21 +1,25 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn import init
 import functools
 from torch.autograd import Variable
 from torch.optim import lr_scheduler
-import numpy as np
 
 
-###############################################################################
-# Functions
-###############################################################################
+"""
+Aus der originalen Implementation
+Enthält alle Funktionen und Klassen, die für die U-Net-Architektur benötigt werden
+"""
+
+##############################################################################
+# Funktionen
+##############################################################################
+
+""" Verschiedene Methoden zur Initialisierung der Gewichte """
 
 
 def weights_init_normal(m):
     classname = m.__class__.__name__
-    # print(classname)
     if classname.find('Conv') != -1:
         init.normal(m.weight.data, 0.0, 0.02)
     elif classname.find('Linear') != -1:
@@ -61,8 +65,11 @@ def weights_init_orthogonal(m):
         init.normal(m.weight.data, 1.0, 0.02)
         init.constant(m.bias.data, 0.0)
 
+############################################################
+
 
 def init_weights(net, init_type='normal'):
+    """ Initialisierung der Gewichte über die übergebene Methode """
     print('initialization method [%s]' % init_type)
     if init_type == 'normal':
         net.apply(weights_init_normal)
@@ -77,6 +84,7 @@ def init_weights(net, init_type='normal'):
 
 
 def get_norm_layer(norm_type='instance'):
+    """ Erstellt ein Normalization Layer """
     if norm_type == 'batch':
         norm_layer = functools.partial(nn.BatchNorm2d, affine=True)
     elif norm_type == 'instance':
@@ -89,9 +97,9 @@ def get_norm_layer(norm_type='instance'):
 
 
 def get_scheduler(optimizer, opt):
+    """ Erstellt ein Scheduler-Objekt zum Update der Lernrate """
     if opt.lr_policy == 'lambda':
         def lambda_rule(epoch):
-            # lr_l = 10 ** (opt.lr_first-((abs(opt.lr_last)-abs(opt.lr_first)) * epoch /(opt.niter-1)))
             lr_l = 1.0 - max(0, epoch + 1 + opt.epoch_count - opt.niter) / float(opt.niter_decay + 1)
             return lr_l
 
@@ -107,6 +115,7 @@ def get_scheduler(optimizer, opt):
 
 def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropout=False, init_type='normal',
              gpu_ids=[]):
+    """ Ruft eine der UnetGenerator-Klassen auf, um die U-Net-Architektur zu erstellen """
     netG = None
     use_gpu = len(gpu_ids) > 0
     norm_layer = get_norm_layer(norm_type=norm)
@@ -121,13 +130,16 @@ def define_G(input_nc, output_nc, ngf, which_model_netG, norm='batch', use_dropo
                                      gpu_ids=gpu_ids)
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % which_model_netG)
+    # Verwendung der GPU, falls möglich
     if len(gpu_ids) > 0:
         netG.cuda(gpu_ids[0])
+    # Initilaisierung der Gewichte
     init_weights(netG, init_type=init_type)
     return netG
 
 
 def print_network(net):
+    """ Ausgabe des Netzwerks in die Konsole """
     num_params = 0
     for param in net.parameters():
         num_params += param.numel()
@@ -136,17 +148,21 @@ def print_network(net):
 
 
 ##############################################################################
-# Classes
+# Klassen
 ##############################################################################
 
-# Sub_pixel U-Net
+
 class SubpixelUnetGenerator(nn.Module):
+    """
+    Erstellt ein modfiziertes U-Net (Verwendung von subpixel pooling)
+    """
+
     def __init__(self, input_nc, output_nc, ngf=64,
                  norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[]):
         super(SubpixelUnetGenerator, self).__init__()
         self.gpu_ids = gpu_ids
 
-        # construct unet structure
+        # Konstruiere U-Net-Struktur
         unet_block = SubpixelUnetSkipConnectionBlock(ngf * 8, ngf * 16, input_nc=None, submodule=None,
                                                      norm_layer=norm_layer, innermost=True)
         unet_block = SubpixelUnetSkipConnectionBlock(ngf * 4, ngf * 8, input_nc=None, submodule=unet_block,
@@ -166,20 +182,27 @@ class SubpixelUnetGenerator(nn.Module):
         else:
             return self.model(input)
 
+
 class subpixelPool(nn.Module):
+    """ Erstellt ein subpixel-Pooling Layer """
+
     def __init__(self, input_nc):
         super(subpixelPool, self).__init__()
         self.input_nc = input_nc
         self.output_nc = input_nc*4
 
     def forward(self, input):
+        # subpixel-Pooling-Operation
         output1 = input[:, :, ::2, ::2]
         output2 = input[:, :, ::2, 1::2]
         output3 = input[:, :, 1::2, ::2]
         output4 = input[:, :, 1::2, 1::2]
         return torch.cat([output1, output2, output3, output4], dim=1)
 
+
 class unSubpixelPool(nn.Module):
+    """ Erstellt ein unsubpixel-Pooling Layer """
+
     def __init__(self, input_nc):
         super(unSubpixelPool, self).__init__()
         self.input_nc = input_nc
@@ -193,7 +216,11 @@ class unSubpixelPool(nn.Module):
         output[:, :, 1::2, 1::2] = input[:, int(self.input_nc*3/4):, :, :]
         return output
 
+
 class SubpixelUnetSkipConnectionBlock(nn.Module):
+    """ Enthält eine Ebene der modifizierten U-Net-Architektur, also den Teil des kontrahierenden
+    Pfads und den Teil des expandierenden Pfads der gleichen Höhe """
+
     def __init__(self, outer_nc, inner_nc, input_nc=None,
                  submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d, use_dropout=False):
         super(SubpixelUnetSkipConnectionBlock, self).__init__()
@@ -207,13 +234,20 @@ class SubpixelUnetSkipConnectionBlock(nn.Module):
 
         downconv = subpixelPool(input_nc)
 
+        # KONTRAHIERENDER PFAD #
+        # Falls die äußerte Ebene erstellt wird, entspricht die Anzahl der feature
+        # maps der Eingabe in das Layer der Anzahl der Schichten der Eingabe in das Netzwerk
         if outermost:
             C1 = nn.Conv2d(input_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=False)
         else:
             C1 = nn.Conv2d(inner_nc*2, inner_nc, kernel_size=3, stride=1, padding=1, bias=False)
+        # Batch Normalization Layer
         B1 = norm_layer(inner_nc)
+        # Aktivierungsfunktion
         R1 = nn.ReLU(True)
-        # R1 = nn.LeakyReLU(0.2, True)
+
+        # Falls die innerste Ebene erstellt wird, wird bei der zweiten Faltung
+        # die Anzahl der Channel verdoppelt
         if innermost:
             C2 = nn.Conv2d(inner_nc, inner_nc*2, kernel_size=3, stride=1, padding=1, bias=False)
             B2 = norm_layer(inner_nc*2)
@@ -221,26 +255,38 @@ class SubpixelUnetSkipConnectionBlock(nn.Module):
             C2 = nn.Conv2d(inner_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=False)
             B2 = norm_layer(inner_nc)
         R2 = nn.ReLU(True)
+        # Konkatenation der beiden Convolutional Layer
         CBR1CBR2 = [C1, B1, R1, C2, B2, R2]
 
+        # EXPANDIERENDER PFAD #
         C1u = nn.Conv2d(inner_nc * 2, inner_nc, kernel_size=3, stride=1, padding=1, bias=False)
         B1u = norm_layer(inner_nc)
         R1u = nn.ReLU(True)
+
+        # Falls die äußerte Ebene ersteltl wird, bleibt die Anzahl der feature
+        # maps gleich
         if outermost:
             C2u = nn.Conv2d(inner_nc, inner_nc, kernel_size=3, stride=1, padding=1, bias=False)
             B2u = norm_layer(inner_nc)
         else:
             C2u = nn.Conv2d(inner_nc, inner_nc*2, kernel_size=3, stride=1, padding=1, bias=False)
             B2u = norm_layer(inner_nc*2)
+        # Aktivierungsfunktion
         R2u = nn.ReLU(True)
+        # Konkatenation der beiden Convolutional Layer
         CBR1CBR2u = [C1u, B1u, R1u, C2u, B2u, R2u]
 
+        # Falls die äußerste Ebene erstellt wird, folgt noch ein weiteres
+        # Convolutional Layer und ein Softmax Layer
         if outermost:
             Cend = nn.Conv2d(inner_nc, outer_nc, kernel_size=1, stride=1, padding=0, bias=True)
 
             down = CBR1CBR2
             up = CBR1CBR2u + [Cend] + [nn.Softmax2d()]
             model = down + [submodule] + up
+
+        # Falls die innerste Ebene erstellt wird, werden die subpixel-Pooling-
+        # und unsubpixel-Pooling-Layer erstellt
         elif innermost:
             upconv = unSubpixelPool(inner_nc*2)
             down = [downconv] + CBR1CBR2
@@ -251,6 +297,7 @@ class SubpixelUnetSkipConnectionBlock(nn.Module):
             down = [downconv] + CBR1CBR2
             up = CBR1CBR2u + [upconv]
 
+            # Falls dropout verwendet wird, wird ein Dropout Layer erstellt
             if use_dropout:
                 model = down + [submodule] + up + [nn.Dropout(0.5)]
             else:
@@ -262,11 +309,14 @@ class SubpixelUnetSkipConnectionBlock(nn.Module):
         if self.outermost:
             return self.model(x)
         else:
+            # Konkatenation der feature maps aus dem kontrahierenden Pfad mit
+            # denen aus dem expandierenden Pfad
             return torch.cat([x, self.model(x)], 1)
 
-########################################################################################################################
-# U-Net
+
 class OriginalUnetGenerator(nn.Module):
+    """ Erstellt die U-Net-Architektur """
+
     def __init__(self, input_nc, output_nc, ngf=64,
                  norm_layer=nn.BatchNorm2d, use_dropout=False, gpu_ids=[]):
         super(OriginalUnetGenerator, self).__init__()
@@ -294,6 +344,10 @@ class OriginalUnetGenerator(nn.Module):
 
 
 class OriginalUnetSkipConnectionBlock(nn.Module):
+    """ Enthält eine Ebene der U-Net-Architektur, also den Teil des kontrahierenden
+    Pfads und den Teil des expandierenden Pfads der gleichen Höhe """
+    """ Wurde für die Arbeit nicht verwendet """
+
     def __init__(self, outer_nc, inner_nc, input_nc=None,
                  submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d, use_dropout=False):
         super(OriginalUnetSkipConnectionBlock, self).__init__()
@@ -305,6 +359,7 @@ class OriginalUnetSkipConnectionBlock(nn.Module):
         if input_nc is None:
             input_nc = outer_nc
 
+        # Verwendung der Faltung mit 2x2-Kernen und strides der Größe 2 im kontrahierenden Pfad
         downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=2,
                              stride=2, padding=0, bias=use_bias)
         if outermost:

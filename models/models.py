@@ -1,5 +1,11 @@
+"""
+Aus der originalen Implementation
+Enthält die Funktion create_model
+"""
+
 
 def create_model(opt):
+    """ Initilaisiert das Netzwerk über die Klasse UNetModel """
     model = None
     print(opt.model)
     if opt.model == 'unet':

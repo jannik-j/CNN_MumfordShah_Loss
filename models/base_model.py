@@ -2,7 +2,18 @@ import os
 import torch
 
 
+"""
+Aus der originalen Implementation
+Enthält die Klasse BaseModel
+"""
+
+
 class BaseModel():
+    """
+    Stellt grundlegende Funktionen für das verwendete Netzwerk zur Verfügung
+    Die restlichen Funktionen sind in der Tochterklasse UNetModel implementiert
+    """
+
     def name(self):
         return 'BaseModel'
 
@@ -39,24 +50,23 @@ class BaseModel():
     def save(self, label):
         pass
 
-    # helper saving function that can be used by subclasses
     def save_network(self, network, network_label, epoch_label, gpu_ids):
+        """ Speichert die Parameter des Netzwerks als .pth-Datei """
         save_filename = '%s_net_%s.pth' % (epoch_label, network_label)
         save_path = os.path.join(self.save_dir, save_filename)
         torch.save(network.cpu().state_dict(), save_path)
         if len(gpu_ids) and torch.cuda.is_available():
             network.cuda(gpu_ids[0])
 
-    # helper loading function that can be used by subclasses
     def load_network(self, network, network_label, epoch_label):
+        """ Lädt ein gespeichertes Netzwerk """
         save_filename = '%s_net_%s.pth' % (epoch_label, network_label)
         save_path = os.path.join(self.save_dir, save_filename)
         print("loading network from %s" % (save_path))
         return network.load_state_dict(torch.load(save_path))
 
-
-    # update learning rate (called once every epoch)
     def update_learning_rate(self):
+        """ Updatet die Lernrate über die torch-Klasse scheduler """
         for scheduler in self.schedulers:
             scheduler.step()
         lr = self.optimizers[0].param_groups[0]['lr']
