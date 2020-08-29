@@ -22,8 +22,8 @@ python LiTS_train_unet.py           ^
 --plot_step 100             ^
 --save_epoch_freq 10        ^
 --display_port 8097         ^
---segType tumor ^
+--segType liver ^
 --lambda_A 0.000001 ^
---checkpoints_dir ./checkpoints/test  ^
+--checkpoints_dir ./checkpoints/2020-06-09_LiTS_Liver_semi__semi=1  ^
 --niter_decay 0 ^
 --no_html
