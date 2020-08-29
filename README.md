@@ -15,20 +15,20 @@ Die Skripte zum Trainieren von Netzwerken sind `LiTS_train_unet.py` und `Axon_tr
 Analog sind `LiTS_test_unet.py` und `Axon_test_unet.py` für die Auswertung der Netzwerke zuständig. Auch sie werden über Batch-Skripte aufgerufen.
 
 Die wichtigsten Kommandozeilenargumente sind:
-* --`dataroot`: Verzeichnis, indem die Trainings- und Testdaten liegen.
-* --`gpu_ids`: IDs der GPUs, die für die Berechnungen verwendet werden sollen (-1, falls keine vorliegen).
-* --`batchSize`: Größe der Minibatches beim Training. Bei der Auswertung hier 1 verwenden.
-* --`semi_rate`: Größe der Semirate zum Weglassen von Labeln. Bei der Auswertung hier 1 verwenden.
-* --`lr`: Startwert der Lernrate.
-* --`lr_decay_iters`: Anzahl der Epochen, nach denen die Lernrate halbiert wird.
-* --`niter`: Gesamtanzahl der Epochen.
-* --`input_nc`: Anzahl der Kanäle des Eingabebildes in das Netzwerk.
-* --`output_nc`: Anzahl der Klassen, in die segmentiert wird.
-* --`save_epoch_freq`: Anzahl der Epochen, nach denen das Netzwerk im Training zwischengespeichert wird.
-* --`segType`: Art der Segmentierung. Beim LiTS-Datensatz gibt es die Optionen (liver, tumor, both), beim Datensatz zur Axon-Myelin-Segmentierung gibt es die Optionen (tem, sem).
-* --`lambda_A`: Trainingsparameter Beta zur Gewichtung der Kostenfunktionen.
-* --`checkpoints_dir`: Verzeichnis, in das die Netzwerke gespeichert werden.
-* --`which_epoch`: Epoche des Zwischenspeicherstandes, der zur Auswertung geladen werden soll
+* `--dataroot`: Verzeichnis, indem die Trainings- und Testdaten liegen.
+* `--gpu_ids`: IDs der GPUs, die für die Berechnungen verwendet werden sollen (-1, falls keine vorliegen).
+* `--batchSize`: Größe der Minibatches beim Training. Bei der Auswertung hier 1 verwenden.
+* `--semi_rate`: Größe der Semirate zum Weglassen von Labeln. Bei der Auswertung hier 1 verwenden.
+* `--lr`: Startwert der Lernrate.
+* `--lr_decay_iters`: Anzahl der Epochen, nach denen die Lernrate halbiert wird.
+* `--niter`: Gesamtanzahl der Epochen.
+* `--input_nc`: Anzahl der Kanäle des Eingabebildes in das Netzwerk.
+* `--output_nc`: Anzahl der Klassen, in die segmentiert wird.
+* `--save_epoch_freq`: Anzahl der Epochen, nach denen das Netzwerk im Training zwischengespeichert wird.
+* `--segType`: Art der Segmentierung. Beim LiTS-Datensatz gibt es die Optionen (liver, tumor, both), beim Datensatz zur Axon-Myelin-Segmentierung gibt es die Optionen (tem, sem).
+* `--lambda_A`: Trainingsparameter Beta zur Gewichtung der Kostenfunktionen.
+* `--checkpoints_dir`: Verzeichnis, in das die Netzwerke gespeichert werden.
+* `--which_epoch`: Epoche des Zwischenspeicherstandes, der zur Auswertung geladen werden soll
 
 Für eine ausführliche Erklärung aller Kommandozeilenargumente sei auf `options/base_options.py` und `options/train_options.py` verwiesen.
 Die Bennung der Argumente entstammt der Implementation, auf der Kim und Ye ihre aufgebaut haben: [https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix]
@@ -36,7 +36,7 @@ Die Bennung der Argumente entstammt der Implementation, auf der Kim und Ye ihre 
 Um Netzwerke ohne die Mumford-Shah-Kostenfunktion zu trainieren, muss in `models/unet_model.py` ein Codeblock modifiziert werden. Der geänderte Block ist in der Datei als Kommentar hinterlegt. Außerdem muss in diesem Fall die Semirate direkt in `LiTS_getDatabase_unet.py` hinterlegt werden, als Kommandozeilenargument ist 1 zu übergeben.
 
 ### Datenstruktur
-Die Datensatz der LiTS-Challenge enhält pro CT-Scan je eine `.nifti`-Datei für die Daten und für die Label. Die nötige Struktur für diese Implementation ist die Folgende:
+Die Datensatz der LiTS-Challenge enhält pro CT-Scan je eine `.nii`-Datei für die Daten und für die Label. Die nötige Struktur für diese Implementation ist die Folgende:
 In dem in `--dataroot` angegebenen Verzeichnis müssen die Ordner `train/` und `test/` enthalten sein. Sie entsprechen der Trainings- und der Testmenge. Für jeden CT-Scan, der in einer dieser Mengen enthalten ist, gibt es einen eigenen Ordner unterhalb von `train/` bzw. `test/`. Dieser enthält für jede *Schicht* des Scans, eine eigene `.mat`-Datei, die das Bild der Schicht als `data` und die Label der Schicht als `labels` enthält. Diese Dateien sind fortlaufend ab 1 nummeriert. Die Konversion der Daten lässt sich beispielsweise mit Matlab durchführen.
 
 Ein Beispiel für diese Struktur:  
