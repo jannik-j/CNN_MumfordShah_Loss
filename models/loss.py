@@ -9,10 +9,7 @@ Mumford-Shah-Kostenfunktion
 
 
 class levelsetLoss(nn.Module):
-    """
-    Klasse zur Berechnung des Fehlerterms aus der Mumford-Shah-Kostenfunktion
-    """
-
+    """ Klasse zur Berechnung des Fehlerterms aus der Mumford-Shah-Kostenfunktion """
     def __init__(self):
         super(levelsetLoss, self).__init__()
 
@@ -35,6 +32,7 @@ class levelsetLoss(nn.Module):
 
 
 class gradientLoss2d(nn.Module):
+    """ Klasse zur Berechnung des Regularitaetsterms aus der Mumford-Shah-Kostenfunktion """
     def __init__(self, penalty='l1'):
         super(gradientLoss2d, self).__init__()
         self.penalty = penalty

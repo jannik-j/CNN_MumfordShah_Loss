@@ -124,7 +124,7 @@ class UNetModel(BaseModel):
 
         else:
             self.loss_C = 0
-
+        ##################################################
         # Berechnung der Mumford-Shah-Kostenfunktion
         loss_L = self.criterionLS(fake_B2, self.real_A)
         loss_A = self.criterionTV(fake_B2) *0.001
@@ -137,6 +137,15 @@ class UNetModel(BaseModel):
 
         self.fake_B2 = fake_B2.data
         self.loss_LS = loss_LS.item()
+        ##################################################
+        # Zum Training von Netzwerken ohne die Mumford-Shah-Kostenfunktion
+        # muss obiger Block durch den folgenden ersetzt werden:
+        ##################################################
+        # loss_tot = loss_C
+        # loss_tot.backward()
+        # self.fake_B2 = fake_B2.data
+        # self.loss_LS = 0
+        ##################################################
 
     def optimize_parameters(self):
         """ Optimierung der Parameter über die gewählte Optimiererklasse """
