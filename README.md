@@ -1,4 +1,4 @@
-## Implementation zur Bachelorarbeit Bildsegmentierung durch Deep Learning mit U-Net und dem Mumford-Shah-Funktional
+## Implementation zur Bachelorarbeit *Bildsegmentierung durch Deep Learning mit U-Net und dem Mumford-Shah-Funktional*
 ### Grundlage
 Die hier verwendete Methode wurde von Boah Kim und Jong Chul Ye in [*Mumford-Shah Loss Functional for Image Segmentation with Deep Learning*](https://doi.org/10.1109/TIP.2019.2941265) vorgestellt. Diese Implementation basiert auf der von Kim und Ye zur Verfügung gestellten: [https://github.com/jongcye/CNN_MumfordShah_Loss]. 
 
@@ -32,6 +32,8 @@ Die wichtigsten Kommandozeilenargumente sind:
 
 Für eine ausführliche Erklärung aller Kommandozeilenargumente sei auf `options/base_options.py` und `options/train_options.py` verwiesen.
 Die Bennung der Argumente entstammt der Implementation, auf der Kim und Ye ihre aufgebaut haben: [https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix]
+
+Um Netzwerke ohne die Mumford-Shah-Kostenfunktion zu trainieren, muss in `models/unet_model.py` ein Codeblock modifiziert werden. Der geänderte Block ist in der Datei als Kommentar hinterlegt. Außerdem muss in diesem Fall die Semirate direkt in `LiTS_getDatabase_unet.py` hinterlegt werden, als Kommandozeilenargument ist 1 zu übergeben.
 
 ### Datenstruktur
 Die Datensatz der LiTS-Challenge enhält pro CT-Scan je eine `.nifti`-Datei für die Daten und für die Label. Die nötige Struktur für diese Implementation ist die Folgende:
